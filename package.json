@@ -8,11 +8,17 @@
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",
     "koa-logger": "^3.2.0",
-    "koa-router": "^7.4.0"
+    "koa-router": "^7.4.0",
+    "koa2-cors": "^2.0.6",
+    "moment": "^2.22.2",
+    "mysql": "^2.16.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "nodemon": "nodemon app.js"
   },
   "repository": {
     "type": "git",
