@@ -18,7 +18,7 @@ function handleSearch(current = 0, pageSize = 30) {
       rule = 'SELECT * FROM columns ORDER BY id';
     } else {
       const min = (pageSize - 0) * (current - 0);
-      rule = `SELECT *, (select count(*) from article where article.column_id = columns.id) as count FROM columns  ORDER BY id ASC LIMIT ${min},${pageSize};`;
+      rule = `SELECT *, (select count(*) FROM article WHERE article.column_id = columns.id) AS count FROM columns  ORDER BY id ASC LIMIT ${min},${pageSize};`;
     }
     db.query(rule, async function(err, result) {
       if (err) {
