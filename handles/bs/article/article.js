@@ -1,10 +1,11 @@
 const Router = require('koa-router');
-const handle = new Router();
+const router = new Router();
 const db = require('./../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
 
-function handleFind(id) {
+function handleSelectById(id) {
   return new Promise(function (resolve, reject) {
-    db.query(`SELECT * FROM article WHERE id=${id} LIMIT 1;`, async function(err, result) {
+    db.query('SELECT * FROM article WHERE id=? LIMIT 1;', [id], function (err, result) {
       if (err) {
         reject();
       } else {
@@ -16,7 +17,7 @@ function handleFind(id) {
 
 function handleInsert(data) {
   return new Promise(function (resolve, reject) {
-    db.query(`INSERT article SET title=?, column_id=?, reprint=?, source=?, content=?;`, [data.title, data.column, data.reprint - 0, data.source, data.content], function(err, result) {
+    db.query('INSERT article SET title=?, column_id=?, reprint=?, source=?, content=?;', [data.title, data.column, data.reprint - 0, data.source, data.content], function (err, result) {
       if (err) {
         reject();
       } else {
@@ -28,7 +29,7 @@ function handleInsert(data) {
 
 function handleUpdate(data) {
   return new Promise(function (resolve, reject) {
-    db.query(`UPDATE article SET title=?, column_id=?, reprint=?, source=?, content=? WHERE id=${data.id};`, [data.title, data.column, data.reprint - 0, data.source, data.content], function(err, result) {
+    db.query(`UPDATE article SET title=?, column_id=?, reprint=?, source=?, content=? WHERE id=${data.id};`, [data.title, data.column, data.reprint - 0, data.source, data.content], function (err, result) {
       if (err) {
         reject();
       } else {
@@ -40,7 +41,7 @@ function handleUpdate(data) {
 
 function handleDelete(id) {
   return new Promise(function (resolve, reject) {
-    db.query(`DELETE FROM article WHERE id=${id};`, async function(err, result) {
+    db.query(`DELETE FROM article WHERE id=${id};`, function (err, result) {
       if (err) {
         reject();
       } else {
@@ -51,110 +52,117 @@ function handleDelete(id) {
 }
 
 function checkParams(data, action) {
-  let msg;
   if (!data) {
-    msg = '参数异常';
+    return '参数不能为空';
   }
 
   if (!data.title) {
-    msg = '标题不能为空';
+    return '标题不能为空';
   }
 
   if (action && !data.column_id) {
-    msg = '栏目id不能为空';
+    return '栏目id不能为空';
   }
 
   if (data.reprint && !data.source) {
-    msg = '来源不能为空';
+    return '来源不能为空';
   }
   
   if (!data.content) {
-    msg = '内容不能为空';
+    return '内容不能为空';
   }
-
-  return msg;
 }
-handle
-  .get('/', async (ctx, next) => {
+
+router
+  .get('/', async (ctx) => {
     const query = ctx.request.query;
     ctx.response.type = 'json';
     ctx.status = 200;
-    let resBody = {};
+
     if (query.id) {
-      await handleFind(query.id).then((result) => {
-        resBody = {
+      const result = await handleSelectById(query.id);
+      if (result) {
+        return ctx.body = JSON.stringify({
           flag: 1,
-          data:  result[0],
-        };
-      }, () => {
-        resBody = {
-          flag: 0,
-          msg: '系统错误',
-        };
+          data: result[0],
+        });
+      }
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: errorText.handleErrMsg
+        ,
       });
     } else {
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 0,
         msg: 'id不能为空',
-      };
+      });
     }
-
-    ctx.body = JSON.stringify(resBody);
   })
-  .post('/', async (ctx, next) => {
+  .post('/', async (ctx) => {
     const data = ctx.request.body;
     ctx.response.type = 'json';
     ctx.status = 200;
-    let resBody = {};
-    let msg = checkParams(data);
+    const msg = checkParams(data);
     if (msg) {
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 0,
         msg,
-      };
+      });
     }
-    await handleInsert(data).then((result) => {
-      resBody = {
+    const result = await handleInsert(data);
+    if (result) {
+      return ctx.body = JSON.stringify({
         flag: 1,
-        msg,
-      };
-    }, () => {
-      resBody = {
+        data: result,
+      });
+    }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+  })
+  .put('/', async (ctx) => {
+    ctx.response.type = 'json';
+    const data = ctx.request.body;
+    const msg = checkParams(data, 'put');
+    if (msg) {
+      return ctx.body = JSON.stringify({
         flag: 0,
         msg,
-      };
-    });
-    ctx.body = JSON.stringify(resBody);
-  })
-  .put('/', async (ctx, next) => {
-    ctx.response.type = 'json';
-    const data = ctx.request.body;
-    let result = checkParams(data, 'put');
-    if (result.status) {
-      ctx.status = result.status;
-      ctx.body = result.body;
-      return false;
+      });
     }
-    await handleUpdate(data).then((result) => {
-      ctx.status = 200;
-      ctx.body = JSON.stringify({
+    const result = await handleUpdate(data);
+    if (result) {
+      return ctx.body = JSON.stringify({
         flag: 1,
       });
-    }, (errMsg) => {
-      ctx.status = 400;
+    }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
     });
   })
-  .delete('/', async (ctx, next) => {
+  .delete('/', async (ctx) => {
     ctx.response.type = 'json';
     const data = ctx.request.body;
-    await handleDelete(data.id).then((result) => {
-      ctx.status = 200;
-      ctx.body = JSON.stringify({
-        flag: 1,
+    if (data.id) {
+      const result = await handleDelete(data.id);
+      if (result) {
+        return ctx.body = JSON.stringify({
+          flag: 1,
+        });
+      }
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: errorText.handleErrMsg,
       });
-    }, () => {
-      ctx.status = 400;
-    });
+    } else {
+      ctx.body = JSON.stringify({
+        flag: 0,
+        msg: 'id不能为空',
+      });
+    }
   });
 
-module.exports = handle;
+module.exports = router;

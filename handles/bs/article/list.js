@@ -1,7 +1,8 @@
 const Router = require('koa-router');
 const moment = require('moment');
-const handle = new Router();
+const router = new Router();
 const db = require('./../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
 
 const STATUSES = ['审核中', '未通过', '已通过'];
 const defaultPageSize = 30;
@@ -40,7 +41,7 @@ function handleSearch(parms) {
     });
   });
 }
-handle
+router
   .get('/', async (ctx, next) => {
     const data = ctx.request.query;
     ctx.response.type = 'json';
@@ -67,4 +68,4 @@ handle
     ctx.body = JSON.stringify(resBody);
   });
 
-module.exports = handle;
+module.exports = router;

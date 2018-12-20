@@ -1,14 +1,13 @@
 const Router = require('koa-router');
 const moment = require('moment');
-const handle = new Router();
+const router = new Router();
 const db = require('./../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
 
 function checkParams(data) {
-  let msg;
   if (!data.title) {
-    msg = '标题不能为空'
+    return '标题不能为空';
   }
-  return msg;
 }
 
 function handleSearch(current = 0, pageSize = 30) {
@@ -42,7 +41,7 @@ function checkRepeat(data) {
 }
 function handleInsert(data) {
   return new Promise(function (resolve, reject) {
-    db.query(`INSERT columns SET title=?;`, [data.title], function(err, result) {
+    db.query('INSERT columns SET title=?;', [data.title], function(err, result) {
       if (err) {
         reject(err);
       } else {
@@ -64,106 +63,101 @@ function handleUpdate(data) {
 }
 
 // 获取
-handle.get('/', async (ctx, next) => {
+router.get('/', async (ctx) => {
   const query = ctx.request.query;
   ctx.status = 200;
   ctx.response.type = 'json';
-  let resBody;
+
   const result = await handleSearch(query.current, query.pageSize);
+  
   if (result) {
     const columns =  result.slice(0, 30).map((item) => {
       return Object.assign({}, item, {
-        created: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss')
+        createdText: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss')
       });
     });
-    resBody = {
+    return ctx.body = JSON.stringify({
       flag: 1,
       data: columns
-    };
+    });
   } else {
-    resBody = {
+    return ctx.body = JSON.stringify({
       flag: 0,
-      msg: '系统错误'
-    };
+      msg: errorText.handleErrMsg
+    });
   }
-  ctx.body = JSON.stringify(resBody);
 });
 
 // 修改
-handle.put('/', async (ctx, next) => {
-  let data = ctx.request.body;
+router.put('/', async (ctx) => {
+  const data = ctx.request.body;
   ctx.status = 200;
   ctx.response.type = 'json';
-  let resBody;
   const msg = checkParams(data);
   if (msg) {
-    resBody = {
+    return ctx.body = JSON.stringify({
       flag: 0,
       msg,
-    };
+    });
   }
   if (typeof data.id === 'undefined') {
-    resBody = {
+    return ctx.body = JSON.stringify({
       flag: 0,
       msg: '栏目id不能为空',
-    };
+    });
   }
-  const result = await checkRepeat(data);
-  if (!result.length) {
-    const result = await handleUpdate(data);
-    if (result) {
-      resBody = {
-        flag: 1,
-      };
-    } else {
-      resBody = {
-        flag: 0,
-        msg: '系统错误',
-      };
-    }
-  } else {
-    resBody = {
+  let result = await checkRepeat(data);
+  if (result.length) {
+    return ctx.body = JSON.stringify({
       flag: 0,
       msg: '栏目名已存在',
-    };
+    });
   }
-  ctx.body = JSON.stringify(resBody);
+  result = await handleUpdate(data);
+  if (result) {
+    return ctx.body = JSON.stringify({
+      flag: 1,
+    });
+  } else {
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+  }
 });
 
 // 保存
-handle.post('/', async (ctx, next) => {
+router.post('/', async (ctx) => {
   let data = ctx.request.body;
   ctx.status = 200;
   ctx.response.type = 'json';
-  let resBody;
+
   const msg = checkParams(data);
   if (msg) {
-    resBody = {
+    return ctx.body = JSON.stringify({
       flag: 0,
       msg,
-    };
+    });
   }
 
-  const result = await checkRepeat(data);
-  if (!result.length) {
-    const result = await handleInsert(data);
-    if (result) {
-      resBody = {
-        flag: 1,
-      };
-    } else {
-      resBody = {
-        flag: 0,
-        msg: '系统错误',
-      };
-    }
-  } else {
-    resBody = {
+  let result = await checkRepeat(data);
+  if (result.length) {
+    return ctx.body = JSON.stringify({
       flag: 0,
       msg: '栏目名已存在',
-    };
+    });
   }
-  ctx.body = JSON.stringify(resBody);
+  result = await handleInsert(data);
+  if (result) {
+    return ctx.body = JSON.stringify({
+      flag: 1,
+    });
+  } else {
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+  }
 });
 
-module.exports = handle;
+module.exports = router;
