@@ -4,13 +4,14 @@ const db = mysql.createConnection({
   port: 3306,
   user: 'koaArticleGuest',
   password: 'koaArticleGuest',
-  database: 'koaArticle'
+  database: 'koaArticle',
 });
 db.connect(function (err) {
   if (err) {
     throw err;
   } else {
-    console.log('success');
+    // eslint-disable-next-line no-console
+    console.log('mysql connect success');
   }
 });
 module.exports = db;

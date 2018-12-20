@@ -31,8 +31,8 @@ function handleSearch(parms) {
       }
       sqlQuery = sqlQuery.slice(0, sqlQuery.length - 4);
     }
-    sqlQuery += `ORDER BY id ASC LIMIT ${min}, ${pageSize};`;
-    db.query(sqlQuery, async function(err, result) {
+    sqlQuery += `ORDER BY created DESC LIMIT ${min}, ${pageSize};`;
+    db.query(sqlQuery, function(err, result) {
       if (err) {
         reject();
       } else {
@@ -46,25 +46,27 @@ router
     const data = ctx.request.query;
     ctx.response.type = 'json';
     ctx.status = 200;
-    
+
     const result = await handleSearch(data);
     if (result) {
       const articles = result.map((item) => {
         return Object.assign({}, item, {
-          createdText: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss'),
-          statusText: STATUSES[item.status]
+          createdText: moment(item.created).utcOffset(960)
+            .format('YYYY-MM-DD HH:mm:ss'),
+          statusText: STATUSES[item.status],
         });
       });
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 1,
         data: articles,
       });
-    } else {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: errorText.handleErrMsg,
-      });
+      return false;
     }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+
   });
 
 module.exports = router;

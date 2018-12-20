@@ -28,50 +28,52 @@ function handleEdit(id, status) {
 }
 
 async function handler (ctx) {
-  const id = ctx.request.body.id;
+  const { id } = ctx.request.body;
   ctx.response.type = 'json';
   ctx.status = 200;
   if (id) {
     const result = await handleEdit(id, ctx.request.method === 'POST' ? 0 : 1);
     if (result) {
-      return ctx.body = JSON.stringify({
-        flag: 1
+      ctx.body = JSON.stringify({
+        flag: 1,
       });
-    } else {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: errorText.handleErrMsg,
-      });
+      return false;
     }
-  } else {
-    return ctx.body = JSON.stringify({
+    ctx.body = JSON.stringify({
       flag: 0,
-      msg: '用户id不能为空',
+      msg: errorText.handleErrMsg,
     });
+    return false;
   }
+  ctx.body = JSON.stringify({
+    flag: 0,
+    msg: '用户id不能为空',
+  });
 }
 router
   .get('/', async (ctx) => {
-    const query = ctx.request.query;
+    const { query } = ctx.request;
     ctx.response.type = 'json';
     ctx.status = 200;
 
     const result = await handleSearch(query.pageSize - 0, query.current - 0);
     if (result) {
       result.forEach((item) => {
-        item.createTimeText = moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss');
-        item.closureTimeText = moment(item.closureTime).utcOffset(960).format('YYYY-MM-DD HH:mm:ss');
+        item.createTimeText = moment(item.created).utcOffset(960)
+          .format('YYYY-MM-DD HH:mm:ss');
+        item.closureTimeText = moment(item.closureTime).utcOffset(960)
+          .format('YYYY-MM-DD HH:mm:ss');
       });
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 1,
         data: result,
       });
-    } else {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: errorText.handleErrMsg
-      });
+      return false;
     }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
   })
   .post('/', handler)
   .delete('/', handler);

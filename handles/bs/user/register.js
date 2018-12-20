@@ -23,7 +23,7 @@ function handleData(data) {
     nickname: data.nickname,
     sex: data.sex,
     password: md5(data.password),
-    userid: uuidv1().replace(/-/g, '')
+    userid: uuidv1().replace(/-/g, ''),
   };
 }
 
@@ -57,46 +57,49 @@ function checkParams(param) {
 router.post('/', async (ctx) => {
   ctx.response.type = 'json';
   ctx.status = 200;
-  
+
   const data = ctx.request.body;
   const msg = checkParams(data);
   if (msg) {
-    return ctx.body = JSON.stringify({
+    ctx.body = JSON.stringify({
       flag: 0,
       msg,
     });
-  } else {
-    const params = handleData(data);
-    let result = await checkRepeat('nickname', params.nickname);
-    if (result.length) {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: '昵称重复',
-      });
-    }
-    result = await checkRepeat('username', params.username);
-    if (result.length) {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: '用户名重复',
-      });
-    }
-    result = await handleInsert(params);
-    if (result.affectedRows) {
-      ctx.cookies.set('userid', params.userid, {
-        maxAge: 10000,
-        domain: 'localhost',
-        httpOnly: false,
-      });
-      return ctx.body = JSON.stringify({
-        flag: 1,
-      });
-    }
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: errorText.handleErrMsg,
-    });
+    return false;
   }
+  const params = handleData(data);
+  let result = await checkRepeat('nickname', params.nickname);
+  if (result.length) {
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: '昵称重复',
+    });
+    return false;
+  }
+  result = await checkRepeat('username', params.username);
+  if (result.length) {
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: '用户名重复',
+    });
+    return false;
+  }
+  result = await handleInsert(params);
+  if (result.affectedRows) {
+    ctx.cookies.set('userid', params.userid, {
+      maxAge: 10000,
+      domain: 'localhost',
+      httpOnly: false,
+    });
+    ctx.body = JSON.stringify({
+      flag: 1,
+    });
+    return false;
+  }
+  ctx.body = JSON.stringify({
+    flag: 0,
+    msg: errorText.handleErrMsg,
+  });
 });
 
 module.exports = router;

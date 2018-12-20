@@ -136,13 +136,7 @@ module.exports = {
             "error",
             { "before": false, "after": true }
         ],
-        "comma-dangle": ["error", {
-            "arrays": "never",
-            "objects": "always",
-            "imports": "never",
-            "exports": "never",
-            "functions": "never"
-        }],
+        "comma-dangle": ["error", 'always-multiline'],
         "lines-between-class-members": [ // 要求或禁止类成员之间出现空行
             "error",
         ],
@@ -188,7 +182,7 @@ module.exports = {
             "error"
         ],
         "quote-props": [ // 禁止出现空语句块
-            "as-needed"
+            "error", "as-needed"
         ],
         "no-empty": [ // 禁止出现空语句块
             "error"

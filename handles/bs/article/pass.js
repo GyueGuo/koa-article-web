@@ -19,24 +19,25 @@ async function handler(ctx) {
   const data = ctx.request.body;
   ctx.response.type = 'json';
   ctx.status = 200;
-  
+
   if (!data.id) {
-    return ctx.body = JSON.stringify({
+    ctx.body = JSON.stringify({
       flag: 0,
       msg: 'id不能为空',
     });
+    return false;
   }
   const result = await handleUpdate(data, ctx.request.method);
   if (result) {
-    return ctx.body = JSON.stringify({
+    ctx.body = JSON.stringify({
       flag: 1,
     });
-  } else {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: errorText.handleErrMsg,
-    });
+    return false;
   }
+  ctx.body = JSON.stringify({
+    flag: 0,
+    msg: errorText.handleErrMsg,
+  });
 }
 
 router

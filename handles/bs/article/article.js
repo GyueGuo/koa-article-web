@@ -60,14 +60,14 @@ function checkParams(data, action) {
     return '标题不能为空';
   }
 
-  if (action && !data.column_id) {
+  if (action && !data.id) {
     return '栏目id不能为空';
   }
 
   if (data.reprint && !data.source) {
     return '来源不能为空';
   }
-  
+
   if (!data.content) {
     return '内容不能为空';
   }
@@ -75,29 +75,29 @@ function checkParams(data, action) {
 
 router
   .get('/', async (ctx) => {
-    const query = ctx.request.query;
+    const { query } = ctx.request;
     ctx.response.type = 'json';
     ctx.status = 200;
 
     if (query.id) {
       const result = await handleSelectById(query.id);
       if (result) {
-        return ctx.body = JSON.stringify({
+        ctx.body = JSON.stringify({
           flag: 1,
           data: result[0],
         });
+        return false;
       }
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 0,
-        msg: errorText.handleErrMsg
-        ,
+        msg: errorText.handleErrMsg,
       });
-    } else {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: 'id不能为空',
-      });
+      return false;
     }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: 'id不能为空',
+    });
   })
   .post('/', async (ctx) => {
     const data = ctx.request.body;
@@ -105,17 +105,19 @@ router
     ctx.status = 200;
     const msg = checkParams(data);
     if (msg) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 0,
         msg,
       });
+      return false;
     }
     const result = await handleInsert(data);
     if (result) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 1,
         data: result,
       });
+      return false;
     }
     ctx.body = JSON.stringify({
       flag: 0,
@@ -127,16 +129,18 @@ router
     const data = ctx.request.body;
     const msg = checkParams(data, 'put');
     if (msg) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 0,
         msg,
       });
+      return false;
     }
     const result = await handleUpdate(data);
     if (result) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 1,
       });
+      return false;
     }
     ctx.body = JSON.stringify({
       flag: 0,
@@ -149,20 +153,21 @@ router
     if (data.id) {
       const result = await handleDelete(data.id);
       if (result) {
-        return ctx.body = JSON.stringify({
+        ctx.body = JSON.stringify({
           flag: 1,
         });
+        return false;
       }
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 0,
         msg: errorText.handleErrMsg,
       });
-    } else {
-      ctx.body = JSON.stringify({
-        flag: 0,
-        msg: 'id不能为空',
-      });
+      return false;
     }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: 'id不能为空',
+    });
   });
 
 module.exports = router;

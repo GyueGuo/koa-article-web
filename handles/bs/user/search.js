@@ -8,7 +8,7 @@ const status = ['已封禁', '正常'];
 
 function handleSearch(key, id) {
   return new Promise(function (resolve, reject) {
-    db.query(`SELECT  userid, username, nickname, status, closureTime, closureText,created FROM user WHERE ${key}='${id}' LIMIT 1;`, async function(err, result) {
+    db.query(`SELECT  userid, username, nickname, status, closureTime, closureText,created FROM user WHERE ${key}='${id}' LIMIT 1;`, function(err, result) {
       if (err) {
         reject();
       } else {
@@ -31,18 +31,19 @@ router
   .post('/', async (ctx) => {
     ctx.response.type = 'json';
     ctx.status = 200;
-    
+
     const data = ctx.request.body;
 
     const msg = checkParam(data);
     if (msg) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 0,
         msg,
       });
+      return false;
     }
     let key;
-    switch(data.type) {
+    switch (data.type) {
     case '1':
       key = 'nickname';
       break;
@@ -55,21 +56,22 @@ router
     }
     const result = await handleSearch(key, data.id);
     if (result) {
-      return ctx.body = JSON.stringify({
+      ctx.body = JSON.stringify({
         flag: 1,
         data: result.map((item) => {
           const user = {...item};
           user.statusText = status[result.status];
-          user.createText = moment(result.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss');
+          user.createText = moment(result.created).utcOffset(960)
+            .format('YYYY-MM-DD HH:mm:ss');
           return user;
         }),
       });
-    } else {
-      return ctx.body = JSON.stringify({
-        flag: 0,
-        msg: errorText.handleErrMsg,
-      });
+      return false;
     }
+    ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
   });
 
 module.exports = router;
