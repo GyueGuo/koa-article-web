@@ -121,10 +121,16 @@ module.exports = {
             "error"
         ],
         "wrap-iife": [ // 禁止使用不带 await 表达式的 async 函数
-            "inside", { "functionPrototypeMethods": true }
+            "error", "inside", { "functionPrototypeMethods": true }
         ],
         "block-spacing": [ // 强制在代码块中开括号前和闭括号后有空格
             "error",
+        ],
+        "keyword-spacing": [ // 关键之前后空格
+            "error", {
+                "after": true,
+                "before": true
+            }
         ],
         "comma-spacing": [ // 强制在逗号后使用空格
             "error",
