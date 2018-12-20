@@ -5,15 +5,23 @@ module.exports = {
         "es6": true
     },
     "extends": "eslint:recommended",
+    "parser": "babel-eslint",
     "parserOptions": {
         "ecmaVersion": 2017,
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "experimentalObjectRestSpread": true
+        }
     },
     "rules": {
         "indent": [
             "error",
             2
         ],
+        "key-spacing": ["error", {
+            "beforeColon": false,
+            "afterColon": true
+        }],
         "no-empty": [
             "error"
         ],
@@ -80,13 +88,14 @@ module.exports = {
             "error",
             "always"
         ],
+        "no-extra-semi": [
+            "error",
+        ],
         "handle-callback-err": [
             "error",
-            "always"
         ],
         "no-shadow": [
-            "error",
-            "always"
+            "error"
         ]
     }
 };
