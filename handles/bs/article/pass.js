@@ -1,6 +1,7 @@
 const Router = require('koa-router');
-const handle = new Router();
+const router = new Router();
 const db = require('../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
 
 function handleUpdate(data, method) {
   return new Promise(function (resolve, reject) {
@@ -16,31 +17,30 @@ function handleUpdate(data, method) {
 
 async function handler(ctx) {
   const data = ctx.request.body;
-    ctx.response.type = 'json';
-    ctx.status = 200;
-    let resBody = {};
-    if (!data.id) {
-      resBody = {
-        flag: 0,
-        msg: '文章id不能为空',
-      };
-    }
-    console.log(ctx.request.method);
-    await handleUpdate(data, ctx.request.method).then((result) => {
-      resBody = {
-        flag: 1,
-      };
-    }, () => {
-      resBody = {
-        flag: 0,
-        msg: '系统错误',
-      };
+  ctx.response.type = 'json';
+  ctx.status = 200;
+  
+  if (!data.id) {
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: 'id不能为空',
     });
-    ctx.body = JSON.stringify(resBody);
+  }
+  let result = await handleUpdate(data, ctx.request.method);
+  if (result) {
+    return ctx.body = JSON.stringify({
+      flag: 1,
+    });
+  } else {
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+  }
 }
 
-handle
+router
   .post('/', handler)
   .delete('/', handler);
 
-module.exports = handle;
+module.exports = router;

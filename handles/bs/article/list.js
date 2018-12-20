@@ -20,7 +20,7 @@ function handleSearch(parms) {
     let sqlQuery = 'SELECT *, (SELECT title FROM columns WHERE columns.id=article.column_id) AS columnName FROM article ';
     if (Object.keys(query).length) {
       sqlQuery += 'WHERE ';
-      if (query.status) {
+      if (query.status !== undefined) {
         sqlQuery += `status=${query.status} AND `;
       }
       if (query.title) {
@@ -42,30 +42,29 @@ function handleSearch(parms) {
   });
 }
 router
-  .get('/', async (ctx, next) => {
+  .get('/', async (ctx) => {
     const data = ctx.request.query;
     ctx.response.type = 'json';
     ctx.status = 200;
-    let resBody = {};
+    
     const result = await handleSearch(data);
     if (result) {
-      const articles =  result.map((item) => {
+      const articles = result.map((item) => {
         return Object.assign({}, item, {
-          created: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss'),
+          createdText: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss'),
           statusText: STATUSES[item.status]
         });
       });
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 1,
         data: articles,
-      };
+      });
     } else {
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 0,
-        msg: '系统错误',
-      };
+        msg: errorText.handleErrMsg,
+      });
     }
-    ctx.body = JSON.stringify(resBody);
   });
 
 module.exports = router;

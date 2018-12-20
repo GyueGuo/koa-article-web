@@ -63,101 +63,98 @@ function handleUpdate(data) {
 }
 
 // 获取
-router.get('/', async (ctx) => {
-  const query = ctx.request.query;
-  ctx.status = 200;
-  ctx.response.type = 'json';
+router
+  .get('/', async (ctx) => {
+    const query = ctx.request.query;
+    ctx.status = 200;
+    ctx.response.type = 'json';
 
-  const result = await handleSearch(query.current, query.pageSize);
-  
-  if (result) {
-    const columns =  result.slice(0, 30).map((item) => {
-      return Object.assign({}, item, {
-        createdText: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss')
+    const result = await handleSearch(query.current, query.pageSize);
+    
+    if (result) {
+      const columns =  result.slice(0, 30).map((item) => {
+        return Object.assign({}, item, {
+          createdText: moment(item.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss')
+        });
       });
-    });
-    return ctx.body = JSON.stringify({
-      flag: 1,
-      data: columns
-    });
-  } else {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: errorText.handleErrMsg
-    });
-  }
-});
+      return ctx.body = JSON.stringify({
+        flag: 1,
+        data: columns
+      });
+    } else {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: errorText.handleErrMsg
+      });
+    }
+  })
+  .put('/', async (ctx) => { // 修改
+    const data = ctx.request.body;
+    ctx.status = 200;
+    ctx.response.type = 'json';
+    const msg = checkParams(data);
+    if (msg) {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg,
+      });
+    }
+    if (typeof data.id === 'undefined') {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: '栏目id不能为空',
+      });
+    }
+    let result = await checkRepeat(data);
+    if (result.length) {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: '栏目名已存在',
+      });
+    }
+    result = await handleUpdate(data);
+    if (result) {
+      return ctx.body = JSON.stringify({
+        flag: 1,
+      });
+    } else {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: errorText.handleErrMsg,
+      });
+    }
+  })
+  .post('/', async (ctx) => {// 保存
+    let data = ctx.request.body;
+    ctx.status = 200;
+    ctx.response.type = 'json';
 
-// 修改
-router.put('/', async (ctx) => {
-  const data = ctx.request.body;
-  ctx.status = 200;
-  ctx.response.type = 'json';
-  const msg = checkParams(data);
-  if (msg) {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg,
-    });
-  }
-  if (typeof data.id === 'undefined') {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: '栏目id不能为空',
-    });
-  }
-  let result = await checkRepeat(data);
-  if (result.length) {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: '栏目名已存在',
-    });
-  }
-  result = await handleUpdate(data);
-  if (result) {
-    return ctx.body = JSON.stringify({
-      flag: 1,
-    });
-  } else {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: errorText.handleErrMsg,
-    });
-  }
-});
+    const msg = checkParams(data);
+    if (msg) {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg,
+      });
+    }
 
-// 保存
-router.post('/', async (ctx) => {
-  let data = ctx.request.body;
-  ctx.status = 200;
-  ctx.response.type = 'json';
-
-  const msg = checkParams(data);
-  if (msg) {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg,
-    });
-  }
-
-  let result = await checkRepeat(data);
-  if (result.length) {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: '栏目名已存在',
-    });
-  }
-  result = await handleInsert(data);
-  if (result) {
-    return ctx.body = JSON.stringify({
-      flag: 1,
-    });
-  } else {
-    return ctx.body = JSON.stringify({
-      flag: 0,
-      msg: errorText.handleErrMsg,
-    });
-  }
-});
+    let result = await checkRepeat(data);
+    if (result.length) {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: '栏目名已存在',
+      });
+    }
+    result = await handleInsert(data);
+    if (result) {
+      return ctx.body = JSON.stringify({
+        flag: 1,
+      });
+    } else {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg: errorText.handleErrMsg,
+      });
+    }
+  });
 
 module.exports = router;
