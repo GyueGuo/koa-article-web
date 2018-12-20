@@ -5,10 +5,10 @@ const db = require('../../../db.js');
 const errorText = require('./../../../commom/errorText.js');
 
 function handleSearch(pageSize = 30, current = 0) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`SELECT username, nickname, created, closureText, closureTime FROM user WHERE status=0 ORDER BY created LIMIT ${current * pageSize}, ${pageSize};`, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -16,12 +16,12 @@ function handleSearch(pageSize = 30, current = 0) {
   });
 }
 function handleEdit(id, status) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     db.query(`UPDATE user SET status=${status} ${status ? '' : ', closureTime=NOW()'} WHERE userid='${id}'`, function (err) {
       if (err) {
-        reject();
+        resolve(false);
       } else {
-        resolve();
+        resolve(true);
       }
     });
   });

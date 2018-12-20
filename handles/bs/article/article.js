@@ -4,10 +4,10 @@ const db = require('./../../../db.js');
 const errorText = require('./../../../commom/errorText.js');
 
 function handleSelectById(id) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query('SELECT * FROM article WHERE id=? LIMIT 1;', [id], function (err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -16,10 +16,10 @@ function handleSelectById(id) {
 }
 
 function handleInsert(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query('INSERT article SET title=?, column_id=?, reprint=?, source=?, content=?;', [data.title, data.column, data.reprint - 0, data.source, data.content], function (err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -28,10 +28,10 @@ function handleInsert(data) {
 }
 
 function handleUpdate(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`UPDATE article SET title=?, column_id=?, reprint=?, source=?, content=? WHERE id=${data.id};`, [data.title, data.column, data.reprint - 0, data.source, data.content], function (err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -40,10 +40,10 @@ function handleUpdate(data) {
 }
 
 function handleDelete(id) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`DELETE FROM article WHERE id=${id};`, function (err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }

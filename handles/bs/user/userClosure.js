@@ -4,12 +4,12 @@ const db = require('../../../db.js');
 const errorText = require('./../../../commom/errorText.js');
 
 function handleEdit(id, status) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     db.query(`UPDATE user SET status=${status} WHERE userid='${id}'`, function (err) {
       if (err) {
-        reject();
+        resolve(false);
       } else {
-        resolve();
+        resolve(true);
       }
     });
   });

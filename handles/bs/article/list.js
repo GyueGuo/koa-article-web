@@ -8,7 +8,7 @@ const STATUSES = ['审核中', '未通过', '已通过'];
 const defaultPageSize = 30;
 
 function handleSearch(parms) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     const query = { ...parms };
     const pageSize = query.pageSize || defaultPageSize;
     const current = query.current || 0;
@@ -27,14 +27,14 @@ function handleSearch(parms) {
         sqlQuery += `title like '%${query.title}%' AND `;
       }
       if (query.column) {
-        sqlQuery += `column=${query.column} AND `;
+        sqlQuery += `column_id='${query.column}' AND `;
       }
       sqlQuery = sqlQuery.slice(0, sqlQuery.length - 4);
     }
     sqlQuery += `ORDER BY created DESC LIMIT ${min}, ${pageSize};`;
     db.query(sqlQuery, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -66,7 +66,6 @@ router
       flag: 0,
       msg: errorText.handleErrMsg,
     });
-
   });
 
 module.exports = router;

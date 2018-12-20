@@ -6,10 +6,10 @@ const db = require('../../../db.js');
 const errorText = require('./../../../commom/errorText.js');
 
 function handleInsert(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query('INSERT user SET username=?, nickname=?, sex=?, password=?, userid=?;', [data.username, data.nickname, data.sex, data.password, data.userid], function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -28,10 +28,10 @@ function handleData(data) {
 }
 
 function checkRepeat(action, data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`SELECT * FROM user WHERE ${action}='${data}' LIMIT 1;`, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }

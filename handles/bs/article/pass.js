@@ -4,10 +4,10 @@ const db = require('../../../db.js');
 const errorText = require('./../../../commom/errorText.js');
 
 function handleUpdate(data, method) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`UPDATE article SET status=${method === 'POST' ? 2 : 1} WHERE id=${data.id};`, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }

@@ -11,7 +11,7 @@ function checkParams(data) {
 }
 
 function handleSearch(current = 0, pageSize = 30) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     let rule = '';
     if (pageSize === 'all') {
       rule = 'SELECT * FROM columns ORDER BY id';
@@ -21,7 +21,7 @@ function handleSearch(current = 0, pageSize = 30) {
     }
     db.query(rule, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -29,10 +29,10 @@ function handleSearch(current = 0, pageSize = 30) {
   });
 }
 function checkRepeat(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`SELECT * FROM columns WHERE title='${data.title}' ${typeof data.id !== 'undefined' ? `AND id <> ${data.id}` : ''};`, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
@@ -40,10 +40,10 @@ function checkRepeat(data) {
   });
 }
 function handleInsert(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query('INSERT columns SET title=?;', [data.title], function(err, result) {
       if (err) {
-        reject(err);
+        resolve();
       } else {
         resolve(result);
       }
@@ -51,10 +51,10 @@ function handleInsert(data) {
   });
 }
 function handleUpdate(data) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`UPDATE columns SET title=? WHERE id=${data.id};`, [data.title], function(err, result) {
       if (err) {
-        reject(err);
+        resolve();
       } else {
         resolve(result);
       }

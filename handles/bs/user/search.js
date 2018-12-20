@@ -7,10 +7,10 @@ const errorText = require('./../../../commom/errorText.js');
 const status = ['已封禁', '正常'];
 
 function handleSearch(key, id) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     db.query(`SELECT  userid, username, nickname, status, closureTime, closureText,created FROM user WHERE ${key}='${id}' LIMIT 1;`, function(err, result) {
       if (err) {
-        reject();
+        resolve();
       } else {
         resolve(result);
       }
