@@ -1,9 +1,9 @@
-let fs = require('fs');
-let path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 async function favicon (ctx, next) {
   if (ctx.method === 'GET' && ctx.url === '/favicon.ico') {
-    ctx.body = fs.readFileSync(path.join('favicon.ico'));
+    ctx.body = await new Promise((resolve) => resolve(fs.readFileSync(path.join('favicon.ico'))));
   } else {
     await next();
   }

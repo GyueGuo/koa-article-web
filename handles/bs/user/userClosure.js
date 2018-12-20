@@ -1,10 +1,11 @@
 const Router = require('koa-router');
-const handle = new Router();
+const router = new Router();
 const db = require('../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
 
 function handleEdit(id, status) {
   return new Promise((resolve, reject) => {
-    db.query(`UPDATE user SET status=${status} WHERE userid='${id}'`, async (err, result) => {
+    db.query(`UPDATE user SET status=${status} WHERE userid='${id}'`, async (err) => {
       if (err) {
         reject();
       } else {
@@ -14,42 +15,31 @@ function handleEdit(id, status) {
   });
 }
 
-handle
-  .post('/', async (ctx) => {
-    const id = ctx.request.body.id;
-    ctx.type = 'json';
-    ctx.status = 200;
-    const resBody = {
-      flag: 0,
-    };
-    if (id) {
-      await handleEdit(id, 0).then(() => {
-        resBody.flag = 1;
-      }, () => {
-        resBody.msg = '系统错误';
-      });
-    } else {
-      resBody.msg = '用户id不能为空';
-    }
-    ctx.body = JSON.stringify(resBody);
-  })
-  .delete('/', async (ctx) => {
-    const id = ctx.request.body.id;
-    ctx.type = 'json';
-    ctx.status = 200;
-    const resBody = {
-      flag: 0,
-    };
-    if (id) {
-      await handleEdit(id, 1).then(() => {
-        resBody.flag = 1;
-      }, () => {
-        resBody.msg = '系统错误';
-      });
-    } else {
-      resBody.msg = '用户id不能为空';
-    }
-    ctx.body = JSON.stringify(resBody);
+async function handler (ctx) {
+  ctx.type = 'json';
+  ctx.status = 200;
 
-  });
-module.exports = handle;
+  const id = ctx.request.body.id;
+  if (id) {
+    const result = await handleEdit(id, ctx.request.method === 'POST' ? 0 : 1);
+    if (result) {
+      return ctx.body = JSON.stringify({
+        flag: 1,
+      });
+    }
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: errorText.handleErrMsg,
+    });
+  } else {
+    return ctx.body = JSON.stringify({
+      flag: 0,
+      msg: 'id不能为空',
+    });
+  }
+}
+router
+  .post('/', handler)
+  .delete('/', handler);
+
+module.exports = router;

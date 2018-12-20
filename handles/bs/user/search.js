@@ -1,8 +1,11 @@
 const Router = require('koa-router');
 const moment = require('moment');
-const handle = new Router();
+const router = new Router();
 const db = require('../../../db.js');
+const errorText = require('./../../../commom/errorText.js');
+
 const status = ['已封禁', '正常'];
+
 function handleSearch(key, id) {
   return new Promise(function (resolve, reject) {
     db.query(`SELECT  userid, username, nickname, status, closureTime, closureText,created FROM user WHERE ${key}='${id}' LIMIT 1;`, async function(err, result) {
@@ -16,59 +19,57 @@ function handleSearch(key, id) {
 }
 
 function checkParam(data) {
-  let msg;
   if (!data.type) {
-    msg = 'type不能为空'
-  } else if (!data.id) {
-    msg = 'id不能为空';
+    return 'type不能为空';
   }
-  return msg;
+  if (!data.id) {
+    return 'id不能为空';
+  }
 }
 
-handle.post('/', async (ctx) => {
-  ctx.response.type = 'json';
-  ctx.status = 200;
-  let resBody;
-  const data = ctx.request.body;
-  const msg = checkParam(data);
-  if (msg) {
-    resBody = {
-      flag: 0,
-      msg,
-    };
-  } else {
+router
+  .post('/', async (ctx) => {
+    ctx.response.type = 'json';
+    ctx.status = 200;
+    
+    const data = ctx.request.body;
+
+    const msg = checkParam(data);
+    if (msg) {
+      return ctx.body = JSON.stringify({
+        flag: 0,
+        msg,
+      });
+    }
     let key;
     switch(data.type) {
-      case '1':
-        key = 'nickname';
-        break;
-      case '2':
-        key = 'userid';
-        break;
-      default:
-        key = 'username';
-        break;
+    case '1':
+      key = 'nickname';
+      break;
+    case '2':
+      key = 'userid';
+      break;
+    default:
+      key = 'username';
+      break;
     }
     const result = await handleSearch(key, data.id);
     if (result) {
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 1,
         data: result.map((item) => {
-          const result = {...item};
-          result.statusText = status[result.status];
-          result.createText = moment(result.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss');
-          return result;
+          const user = {...item};
+          user.statusText = status[result.status];
+          user.createText = moment(result.created).utcOffset(960).format('YYYY-MM-DD HH:mm:ss');
+          return user;
         }),
-      };
+      });
     } else {
-      resBody = {
+      return ctx.body = JSON.stringify({
         flag: 0,
-        msg: '系统错误',
-      };
+        msg: errorText.handleErrMsg,
+      });
     }
+  });
 
-  }
-  ctx.body = JSON.stringify(resBody);
-});
-
-module.exports = handle;
+module.exports = router;

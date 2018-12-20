@@ -26,7 +26,7 @@ async function handler(ctx) {
       msg: 'id不能为空',
     });
   }
-  let result = await handleUpdate(data, ctx.request.method);
+  const result = await handleUpdate(data, ctx.request.method);
   if (result) {
     return ctx.body = JSON.stringify({
       flag: 1,

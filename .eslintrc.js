@@ -18,6 +18,9 @@ module.exports = {
             "error",
             2
         ],
+        'prefer-const': [
+            "error",
+        ],
         "key-spacing": ["error", {
             "beforeColon": false,
             "afterColon": true
