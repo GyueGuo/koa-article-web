@@ -60,8 +60,8 @@ router
         flag: 1,
         data: result.map((item) => {
           const user = {...item};
-          user.statusText = status[result.status];
-          user.createText = moment(result.created).utcOffset(960)
+          user.statusText = status[item.status];
+          user.createText = moment(item.created).utcOffset(960)
             .format('YYYY-MM-DD HH:mm:ss');
           return user;
         }),

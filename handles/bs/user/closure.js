@@ -6,7 +6,7 @@ const errorText = require('./../../../commom/errorText.js');
 
 function handleSearch(pageSize = 30, current = 0) {
   return new Promise(function (resolve) {
-    db.query(`SELECT username, nickname, created, closureText, closureTime FROM user WHERE status=0 ORDER BY created LIMIT ${current * pageSize}, ${pageSize};`, function(err, result) {
+    db.query(`SELECT username, nickname, userid, created, closureText, closureTime FROM user WHERE status=0 ORDER BY created LIMIT ${current * pageSize}, ${pageSize};`, function(err, result) {
       if (err) {
         resolve();
       } else {
